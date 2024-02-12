@@ -9,6 +9,10 @@ services:
       dockerfile: ./Dockerfile
     depends_on:
       - postgres
+    links:
+     - postgres
+    volumes:
+      - .:/app
 
   postgres:
     image: postgres:16.1
@@ -16,21 +20,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=superset
+      - POSTGRES_DB=rickmorty
     ports:
       - "15432:5432"
 
-  superset:
-    image: apache/superset
-    container_name: superset-rickmorty
-    links:
-      - postgres
-    ports:
-      - "18088:8088"
-    environment:
-      - SUPERSET_LOAD_EXAMPLES=no
-      - SUPERSET_DB_URI=postgresql://postgres:postgres@postgres:5432/superset
-      - SUPERSET__SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://postgres:postgres@db:5432/superset
-      - SUPERSET_SECRET_KEY=postgres
-    depends_on:
-      - postgres
