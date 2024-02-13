@@ -42,15 +42,22 @@ class Episodes(Client):
         self.col = 'characters'
 
     def to_df(self) -> pd.DataFrame:
-        pass
+        data = self.get_all()
+        df = data.explode(column=self.col)
+        df = df.loc[df[self.col].notnull(), ['id', 'name', 'episode', 'air_date', self.col]]
+        df[self.col+'_id'] =  df[self.col].str.extract(r'(\d+)').astype(dtype=int, errors='ignore')
+        df = df.rename({'id':'episode_id'}, axis=1).drop(self.col)
 
+        return df
 class Residency(Client):
     def __init__(self) -> None:
         super().__init__()
         self.url = self.url + 'location'
 
     def to_df(self) -> pd.DataFrame:
-        pass
+        
+        data = self.get_all()
+        return data.set_index('id')['name']
 
 
 class Locations(Client):
