@@ -44,18 +44,22 @@ class Database:
             metadata,
             Column("id", Integer, primary_key=True),
             Column("name", String),
-            Column("origin_id", Integer, ForeignKey('locations.id', ondelete='cascade')),
+            Column(
+                "origin_id", Integer, ForeignKey("locations.id", ondelete="cascade")
+            ),
         )
 
         episodes = Table(
             "episodes",
             metadata,
-            Column('id', Integer, primary_key=True),
+            Column("id", Integer, primary_key=True),
             Column("episode_id", String),
             Column("name", String),
             Column("episode", String),
             Column("air_date", DateTime),
-            Column("characters_id", Integer, ForeignKey("origin.id", ondelete='cascade')),
+            Column(
+                "characters_id", Integer, ForeignKey("origin.id", ondelete="cascade")
+            ),
         )
 
         episodes.drop(engine, checkfirst=True)
@@ -63,3 +67,21 @@ class Database:
         locations.drop(engine, checkfirst=True)
 
         metadata.create_all(engine)
+
+    def create_view(self):
+        sql = """
+                DROP VIEW IF EXISTS characters_from_earth_count_by_month;
+
+                CREATE VIEW characters_from_earth_count_by_month
+                AS
+                SELECT DATE_TRUNC('month', air_date) AS month_year,
+                COUNT(l.id) AS episode_count
+                FROM episodes e
+                JOIN origin o ON e.characters_id = o.id
+                JOIN locations l ON o.id = l.id
+                WHERE l."name" LIKE 'Earth%'
+                GROUP BY DATE_TRUNC('month', air_date)
+                ORDER BY month_year DESC;
+        """
+        with engine.connect() as conn:
+            conn.execute(text(sql))

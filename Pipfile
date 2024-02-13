@@ -9,6 +9,7 @@ pandas = "*"
 sqlalchemy = "*"
 pyarrow = "*"
 psycopg2-binary = "*"
+matplotlib = "*"
 
 [dev-packages]
 ipython = "*"

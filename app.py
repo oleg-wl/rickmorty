@@ -1,4 +1,6 @@
-from database.schema import Database, engine
+
+
+from database.schema import Database
 import source.client as client
 
 Database().test()
@@ -12,3 +14,5 @@ client.Client().df_to_sql(df=res, name='origin')
 
 eps = client.Episodes().to_df()
 client.Client().df_to_sql(df=eps, name='episodes')
+
+Database().create_view()
