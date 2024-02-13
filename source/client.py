@@ -46,10 +46,12 @@ class Episodes(Client):
         df = data.explode(column=self.col)
         df = df.loc[df[self.col].notnull(), ['id', 'name', 'episode', 'air_date', self.col]]
         df[self.col+'_id'] =  df[self.col].str.extract(r'(\d+)').astype(dtype=int, errors='ignore')
-        df = df.rename({'id':'episode_id'}, axis=1).drop(self.col)
+        df = (df.reset_index(drop=True)
+              .rename({'id':'episode_id'}, axis=1)
+              .drop(self.col, axis=1))
 
         return df
-class Residency(Client):
+class Locations(Client):
     def __init__(self) -> None:
         super().__init__()
         self.url = self.url + 'location'
@@ -57,10 +59,12 @@ class Residency(Client):
     def to_df(self) -> pd.DataFrame:
         
         data = self.get_all()
-        return data.set_index('id')['name']
+        data = data.set_index('id')['name']
+        data[999] = 'unknown'
+        return data
 
 
-class Locations(Client):
+class Residents(Client):
     def __init__(self) -> None:
         super().__init__()
         self.url = self.url + 'location'
@@ -78,5 +82,26 @@ class Locations(Client):
               .drop(['index', 'name', 'residents'], axis=1))
 
         return df
+
+class Characters(Client):
+    def __init__(self) -> None:
+        super().__init__()
+        self.url = self.url + 'character'
+        self.col = 'origin'
+
+    def to_df(self) -> pd.DataFrame:
+        data = self.get_all()
+
+        def extract_url(row):
+            val =  row.get('url')
+            if len(val) == 0: return '999' 
+            else: return val
+        
+        data[self.col+'_id'] = (data['origin'].apply(lambda x: extract_url(x))
+                                .str.extract(r'(\d+)')
+                                .astype(dtype=int, errors='ignore')
+                                )
+        data = data.set_index('id', drop=True).loc[:,['name', self.col+'_id']]
+        return data
 
         

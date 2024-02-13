@@ -1,5 +1,14 @@
-from database.schema import Database
-from source.client import Locations
+from database.schema import Database, engine
+import source.client as client
 
 Database().test()
-Locations().create_df()
+Database().init_db()
+
+locs = client.Locations().to_df()
+client.Client().df_to_sql(df=locs, name='locations')
+
+res = client.Characters().to_df()
+client.Client().df_to_sql(df=res, name='origin')
+
+eps = client.Episodes().to_df()
+client.Client().df_to_sql(df=eps, name='episodes')

@@ -1,34 +1,65 @@
+import logging
+
 from sqlalchemy import create_engine, text
 from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, DateTime
 
-engine = create_engine("postgresql+psycopg2://postgres:postgres@postgres:5432/rickmorty")
+from sqlalchemy.exc import DBAPIError
+
+engine = create_engine(
+    "postgresql+psycopg2://postgres:postgres@localhost:15432/rickmorty", echo=True
+)
+
+logger = logging.getLogger("database")
+
 
 class Database:
 
     def test(self):
-        with engine.connect() as conn:
 
-            result = conn.execute(text("select version()"))
-            print(result.all())
+        try:
 
-    def loc():
-        
+            with engine.connect() as conn:
+
+                result = conn.execute(text("select version()"))
+                logger.info("Connection OK. PG ver %s" % result.all())
+
+        except DBAPIError as dberr:
+            logger.exception("Database error %s" % dberr)
+        except Exception as e:
+            logger.exception("An error occured %s" % e)
+
+    def init_db(self):
 
         metadata = MetaData()
 
-        location = Table('location', metadata,
-              Column('location_id', Integer, ForeignKey('residency.id')),
-              Column('residents_id', Integer, primary_key=True)
-              )
+        locations = Table(
+            "locations",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String),
+        )
 
-        episodes = Table('episodes', metadata,
-                    Column('air_date', DateTime),
-                    Column('episode', String),
-                    Column('characters_id', Integer, ForeignKey('location.residents_id')),
-                    )
+        origin = Table(
+            "origin",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String),
+            Column("origin_id", Integer, ForeignKey('locations.id', ondelete='cascade')),
+        )
 
-        residency = Table('residency', metadata,
-                    Column('id', primary_key=True),
-                    Column('name', String),
-                    )
+        episodes = Table(
+            "episodes",
+            metadata,
+            Column('id', Integer, primary_key=True),
+            Column("episode_id", String),
+            Column("name", String),
+            Column("episode", String),
+            Column("air_date", DateTime),
+            Column("characters_id", Integer, ForeignKey("origin.id", ondelete='cascade')),
+        )
+
+        episodes.drop(engine, checkfirst=True)
+        origin.drop(engine, checkfirst=True)
+        locations.drop(engine, checkfirst=True)
+
         metadata.create_all(engine)
