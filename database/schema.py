@@ -1,36 +1,41 @@
 import logging
+import os
 
 from sqlalchemy import create_engine, text
 from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, DateTime
 
-from sqlalchemy.schema import DropTable
-from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.exc import DBAPIError, ProgrammingError
 
-from sqlalchemy.exc import DBAPIError
-
-engine = create_engine(
-    "postgresql+psycopg2://postgres:postgres@postgres:5432/rickmorty", echo=True)
 logger = logging.getLogger("database")
 
-@compiles(DropTable, "postgresql")
-def _compile_drop_table(element, compiler, **kwargs):
-    return compiler.visit_drop_table(element) + " CASCADE"
+if os.getenv('DEBUG'):
+    engine = create_engine(
+        "postgresql+psycopg2://postgres:postgres@localhost:5432/rickmorty", echo=True)
+else:
+    engine = create_engine(
+        "postgresql+psycopg2://postgres:postgres@postgres:5432/rickmorty", echo=False, pool_pre_ping=True)
+
 class Database:
 
+    @staticmethod
+    def connector(command):
+        try:
+            with engine.connect() as conn:
+                transaction = conn.begin()
+                try:
+                    conn.execute(text(command))
+                    transaction.commit()
+                    logger.info("Command OK")
+                except Exception as e:
+                    transaction.rollback()
+                    logger.error("Error during execution command %s" % e)
+        except DBAPIError as dberr:
+                logger.error("Database error %s" % dberr)
+        except Exception as e:
+            logger.error("Connection error %s" % e)
 
     def test(self):
-
-        try:
-
-            with engine.connect() as conn:
-
-                result = conn.execute(text("select version()"))
-                logger.info("Connection OK. PG ver %s" % result.all())
-
-        except DBAPIError as dberr:
-            logger.exception("Database error %s" % dberr)
-        except Exception as e:
-            logger.exception("An error occured %s" % e)
+        Database.connector('select version()')
 
     def init_db(self):
 
@@ -66,33 +71,31 @@ class Database:
             ),
         )
 
-        
-        episodes.drop(engine, checkfirst=True)
-        origin.drop(engine, checkfirst=True)
-        locations.drop(engine, checkfirst=True)
-
-        metadata.create_all(engine)
+        metadata.create_all(engine, checkfirst=True)
 
     def create_view(self):
-        drop_sql = "DROP VIEW IF EXISTS characters_from_earth_count_by_month CASCADE;"
-        create_sql = """
-            CREATE VIEW characters_from_earth_count_by_month AS
-            SELECT DATE_TRUNC('month', air_date) AS month_year,
-                COUNT(l.id) AS episode_count
-            FROM episodes e
-            JOIN origin o ON e.characters_id = o.id
-            JOIN locations l ON o.id = l.id
-            WHERE l."name" LIKE 'Earth%'
-            GROUP BY DATE_TRUNC('month', air_date)
-            ORDER BY month_year DESC;
+        view = """
+        DO
+        $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 from information_schema.views 
+                WHERE table_name = 'characters_from_earth_count_by_month') THEN
+                CREATE VIEW characters_from_earth_count_by_month AS
+                SELECT DATE_TRUNC('month', air_date) AS date,
+                    COUNT(l.id) AS count
+                FROM episodes e
+                JOIN origin o ON e.characters_id = o.id
+                JOIN locations l ON o.id = l.id
+                WHERE l."name" LIKE 'Earth%'
+                GROUP BY DATE_TRUNC('month', air_date)
+                ORDER BY date DESC;
+            END IF;
+        END
+        $$;
         """
+        Database.connector(view)
+        logger.info('View OK')
 
-        with engine.connect() as conn:
-            trans = conn.begin()
-            try:
-                conn.execute(text(drop_sql))
-                conn.execute(text(create_sql))
-                trans.commit()
-            except Exception as e:
-                trans.rollback()
-                raise e
+    def delete_table(self, tablename:str):
+        sql = f'DELETE FROM {tablename};'
+        Database.connector(sql)

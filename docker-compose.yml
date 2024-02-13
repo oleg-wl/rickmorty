@@ -1,9 +1,9 @@
-version: '3.4'
+version: '2.0'
 
 services:
-  rickmortyapi:
-    image: rickmortyapi
-    container_name: rickmortyapi-pull
+  rickmorty-api:
+    image: ${PROJECT_NAME}-api:${PROJECT_VER}
+    container_name: ${PROJECT_NAME}-pull
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -16,11 +16,11 @@ services:
 
   postgres:
     image: postgres:16.1
-    container_name: postgres-rickmorty
+    container_name: ${PROJECT_NAME}-postgres
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=rickmorty
     ports:
-      - "5432:5432"
+      - "${PORT}:5432"
 
