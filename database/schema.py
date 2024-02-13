@@ -6,11 +6,8 @@ from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Dat
 from sqlalchemy.exc import DBAPIError
 
 engine = create_engine(
-    "postgresql+psycopg2://postgres:postgres@localhost:15432/rickmorty", echo=True
-)
-
+    "postgresql+psycopg2://postgres:postgres@postgres:5432/rickmorty", echo=True)
 logger = logging.getLogger("database")
-
 
 class Database:
 
@@ -62,6 +59,7 @@ class Database:
             ),
         )
 
+        
         episodes.drop(engine, checkfirst=True)
         origin.drop(engine, checkfirst=True)
         locations.drop(engine, checkfirst=True)
@@ -70,8 +68,7 @@ class Database:
 
     def create_view(self):
         sql = """
-                DROP VIEW IF EXISTS characters_from_earth_count_by_month;
-
+                DROP VIEW IF EXISTS characters_from_earth_count_by_month CASCADE;
                 CREATE VIEW characters_from_earth_count_by_month
                 AS
                 SELECT DATE_TRUNC('month', air_date) AS month_year,
