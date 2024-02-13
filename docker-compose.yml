@@ -22,5 +22,5 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=rickmorty
     ports:
-      - "15432:5432"
+      - "5432:5432"
 

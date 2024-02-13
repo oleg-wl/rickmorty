@@ -3,13 +3,20 @@ import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, DateTime
 
+from sqlalchemy.schema import DropTable
+from sqlalchemy.ext.compiler import compiles
+
 from sqlalchemy.exc import DBAPIError
 
 engine = create_engine(
     "postgresql+psycopg2://postgres:postgres@postgres:5432/rickmorty", echo=True)
 logger = logging.getLogger("database")
 
+@compiles(DropTable, "postgresql")
+def _compile_drop_table(element, compiler, **kwargs):
+    return compiler.visit_drop_table(element) + " CASCADE"
 class Database:
+
 
     def test(self):
 
@@ -67,18 +74,25 @@ class Database:
         metadata.create_all(engine)
 
     def create_view(self):
-        sql = """
-                DROP VIEW IF EXISTS characters_from_earth_count_by_month CASCADE;
-                CREATE VIEW characters_from_earth_count_by_month
-                AS
-                SELECT DATE_TRUNC('month', air_date) AS month_year,
+        drop_sql = "DROP VIEW IF EXISTS characters_from_earth_count_by_month CASCADE;"
+        create_sql = """
+            CREATE VIEW characters_from_earth_count_by_month AS
+            SELECT DATE_TRUNC('month', air_date) AS month_year,
                 COUNT(l.id) AS episode_count
-                FROM episodes e
-                JOIN origin o ON e.characters_id = o.id
-                JOIN locations l ON o.id = l.id
-                WHERE l."name" LIKE 'Earth%'
-                GROUP BY DATE_TRUNC('month', air_date)
-                ORDER BY month_year DESC;
+            FROM episodes e
+            JOIN origin o ON e.characters_id = o.id
+            JOIN locations l ON o.id = l.id
+            WHERE l."name" LIKE 'Earth%'
+            GROUP BY DATE_TRUNC('month', air_date)
+            ORDER BY month_year DESC;
         """
+
         with engine.connect() as conn:
-            conn.execute(text(sql))
+            trans = conn.begin()
+            try:
+                conn.execute(text(drop_sql))
+                conn.execute(text(create_sql))
+                trans.commit()
+            except Exception as e:
+                trans.rollback()
+                raise e
