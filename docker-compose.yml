@@ -2,6 +2,8 @@ version: '2.0'
 
 services:
   postgres:
+    env_file:
+     - .env
     image: postgres:16.1
     container_name: ${PROJECT_NAME}-postgres
     environment:
@@ -14,7 +16,7 @@ services:
      - ${PROJECT_NAME}-network
 
   rickmorty-api:
-    image: ${PROJECT_NAME}-api:${PROJECT_VER}
+    image: ${PROJECT_NAME}-api
     container_name: ${PROJECT_NAME}-etl
     build:
       context: .

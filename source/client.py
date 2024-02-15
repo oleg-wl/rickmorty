@@ -5,7 +5,7 @@ import pandas as pd
 
 from sqlalchemy.types import Integer, String
 
-from database.schema import engine
+from database.schema import Database
 
 logger = logging.getLogger('client')
 
@@ -15,6 +15,7 @@ class Client():
         self.col = ''
 
         self.sess = requests.Session()
+        self.engine = Database().engine
 
     def get_all(self) -> pd.DataFrame:
 
@@ -32,7 +33,7 @@ class Client():
 
     def df_to_sql(self, df: pd.DataFrame = None, name: str = None, ):
 
-        df = df.to_sql(name=name, con=engine, if_exists='append', index=True, index_label='id')
+        df = df.to_sql(name=name, con=self.engine, if_exists='append', index=True, index_label='id')
         logger.info('Inserted %s rows' %(df))
 
 class Episodes(Client):

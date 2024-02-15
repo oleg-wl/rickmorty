@@ -1,7 +1,9 @@
+import os
 from database.schema import Database
 import source.client as client
+#from dotenv import load_dotenv
 
-Database().init_db()
+#load_dotenv()
 
 for i in ['locations', 'origin', 'episodes']:
     Database().delete_table(i)            
@@ -15,5 +17,9 @@ for i in ['locations', 'origin', 'episodes']:
         case 'episodes':
             eps = client.Episodes().to_df()
             client.Client().df_to_sql(df=eps, name='episodes')
+
+
             
-Database().create_view()
+db = Database()
+db.init_db()
+db.create_view()

@@ -8,17 +8,25 @@ from sqlalchemy.exc import DBAPIError, ProgrammingError
 
 logger = logging.getLogger("database")
 
-if os.getenv('DEBUG'):
-    engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@postgres/rickmorty", echo=True)
-else:
-    engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@postgres/rickmorty", echo=False)
-
 class Database:
+    def __init__(self):
+
+        cred = {
+    'db_user':os.getenv('DB_USER', 'postgres'),
+    'db_password':os.getenv('DB_PASSWORD', 'postgres'),
+    'db_host':os.getenv('DB_HOST', 'postgres'),
+    'db_port':os.getenv('DB_PORT', 5432),
+    'database':os.getenv('DATABASE', 'rickmorty'),
+    }
+
+        echo = bool(os.getenv('DEBUG', False))
+        c = 'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{database}'.format(**cred)
+        self.engine = create_engine(c, echo=echo)
+
 
     @staticmethod
     def connector(command):
+        engine = Database().engine
         try:
             with engine.connect() as conn:
                 transaction = conn.begin()
@@ -71,7 +79,7 @@ class Database:
             ),
         )
 
-        metadata.create_all(engine, checkfirst=True)
+        metadata.create_all(self.engine, checkfirst=True)
 
     def create_view(self):
         view = """
