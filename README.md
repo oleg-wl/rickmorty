@@ -15,14 +15,14 @@
 
 ## Шаги по установке, сборке, запуску
 ### Запуск проекта с помощью docker-compose
-```
+```bash
 $: docker-compose up --build -d
 ```
 Будет запущен контейнер с postgress и создан контейнер с скриптом python для инициализации базы данных, таблиц и получения данных из API
 1. rickmorty-postgres - контейнер с бд
 2. rickmorty-etl - скрипт загрузки данных
 
-```
+```bash
 $: docker start rickmorti-etl -i
 ```
 Запуск процесса по получению и трансформации данных в ручную при рабочем контейнере rickmorty postgres
@@ -37,8 +37,9 @@ $:python app.py local
 ```
 
 ## Пример использования
-```
-$: docker compose up
+```bash
+$: docker-compose up -d
+$: docker start rickmorty-etl -t
 $: docker exec -it rickmorty-postgres psql -U postgres rickmorty
 =>: SELECT * FROM public.characters_from_earth_count_by_month;
 ```
@@ -52,21 +53,21 @@ $: docker exec -it rickmorty-postgres psql -U postgres rickmorty
 ![Схема бд](schema.png)
 
 
-LOCATIONS
-id - айди планеты
-name - название планеты или места рождения
+LOCATIONS<br>
+id - айди планеты<br>
+name - название планеты или места рождения<br>
 
-ORIGIN
-id - айди персонажа
-name - имя персонажа
-origin_id - форинкей к таблице с планетами
+ORIGIN<br>
+id - айди персонажа<br>
+name - имя персонажа<br>
+origin_id - форинкей к таблице с планетами<br>
 
-EPISODES
-id - индекс
-episode_id - айди эпизода
-name - название эпизода
-episode - код эпизода пример - S1E3
-air_date - дата эфира
-characters_id - форинкей к персонажу
+EPISODES <br>
+id - индекс<br>
+episode_id - айди эпизода<br>
+name - название эпизода<br>
+episode - код эпизода пример - S1E3<br>
+air_date - дата эфира<br>
+characters_id - форинкей к персонажу<br>
 
 В базу данных загружены все персонажи и все локации их рождения. Можно сделать выборку не только по планете Земля, но и по любому месту или персонажу. Примеры в блокноте
