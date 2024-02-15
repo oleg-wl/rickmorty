@@ -23,7 +23,7 @@
 2. rickmorty-etl - скрипт загрузки данных
 
 ```bash
- docker start rickmorti-etl -i
+ docker start rickmorty-etl -i
 ```
 Запуск процесса по получению и трансформации данных в ручную при рабочем контейнере rickmorty postgres
 
@@ -38,10 +38,9 @@ python app.py local
 
 ## Пример использования
 ```bash
-docker-compose up -d
-docker start rickmorty-etl -t
-docker exec -it rickmorty-postgres psql -U postgres rickmorty
-SELECT * FROM public.characters_from_earth_count_by_month;
+docker-compose up -d \
+&& docker start rickmorty-etl -i \
+&& docker exec -it rickmorty-postgres psql -U postgres rickmorty -c 'SELECT * FROM public.characters_from_earth_count_by_month;' 
 ```
 Витрина данных - VIEW public.characters_from_earth_count_by_month
 
