@@ -1,4 +1,5 @@
 import logging
+import os
 
 import requests
 import pandas as pd
@@ -7,8 +8,9 @@ from sqlalchemy.types import Integer, String
 
 from database.schema import Database
 
-logger = logging.getLogger('client')
 
+logger = logging.getLogger('client')
+    
 class Client():
     def __init__(self) -> None:
         self.url = "https://rickandmortyapi.com/api/"

@@ -6,6 +6,7 @@ from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Dat
 
 from sqlalchemy.exc import DBAPIError, ProgrammingError
 
+
 logger = logging.getLogger("database")
 
 class Database:
@@ -18,8 +19,9 @@ class Database:
     'db_port':os.getenv('DB_PORT', 5432),
     'database':os.getenv('DATABASE', 'rickmorty'),
     }
-
-        echo = bool(os.getenv('DEBUG', False))
+        try:
+            echo = bool(int(os.getenv('DEBUG')))
+        except: echo = False
         c = 'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{database}'.format(**cred)
         self.engine = create_engine(c, echo=echo)
 
@@ -89,13 +91,13 @@ class Database:
             IF NOT EXISTS (SELECT 1 from information_schema.views 
                 WHERE table_name = 'characters_from_earth_count_by_month') THEN
                 CREATE VIEW characters_from_earth_count_by_month AS
-                SELECT DATE_TRUNC('month', air_date) AS date,
+                SELECT date_trunc('month', air_date::timestamp) AS date,
                     COUNT(l.id) AS count
                 FROM episodes e
                 JOIN origin o ON e.characters_id = o.id
                 JOIN locations l ON o.id = l.id
                 WHERE l."name" LIKE 'Earth%'
-                GROUP BY DATE_TRUNC('month', air_date)
+                GROUP BY DATE_TRUNC('month', air_date::timestamp)
                 ORDER BY date DESC;
             END IF;
         END

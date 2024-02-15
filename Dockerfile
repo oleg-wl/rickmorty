@@ -4,14 +4,11 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 
 ENV PYTHONUNBUFFERED=1
-ENV DEBUG=True
+ENV DEBUG=0
 
 WORKDIR /app
-
-RUN pip install --upgrade pip
-RUN pip install pipenv
 COPY . /app
 
-RUN pipenv install --deploy --ignore-pipfile
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-CMD ["pipenv" , "run", "python", "app.py"]
+CMD ["python", "app.py", "docker"]
