@@ -16,14 +16,14 @@
 ## Шаги по установке, сборке, запуску
 ### Запуск проекта с помощью docker-compose
 ```bash
-$: docker-compose up --build -d
+ docker-compose up --build -d
 ```
 Будет запущен контейнер с postgress и создан контейнер с скриптом python для инициализации базы данных, таблиц и получения данных из API
 1. rickmorty-postgres - контейнер с бд
 2. rickmorty-etl - скрипт загрузки данных
 
 ```bash
-$: docker start rickmorti-etl -i
+ docker start rickmorti-etl -i
 ```
 Запуск процесса по получению и трансформации данных в ручную при рабочем контейнере rickmorty postgres
 
@@ -32,16 +32,16 @@ $: docker start rickmorti-etl -i
 2. Добавить данные для подключения к базе данных postgress в config.env 
 
 ```bash
-$:pip install -r requirements.txt
-$:python app.py local
+pip install -r requirements.txt
+python app.py local
 ```
 
 ## Пример использования
 ```bash
-$: docker-compose up -d
-$: docker start rickmorty-etl -t
-$: docker exec -it rickmorty-postgres psql -U postgres rickmorty
-=>: SELECT * FROM public.characters_from_earth_count_by_month;
+docker-compose up -d
+docker start rickmorty-etl -t
+docker exec -it rickmorty-postgres psql -U postgres rickmorty
+SELECT * FROM public.characters_from_earth_count_by_month;
 ```
 Витрина данных - VIEW public.characters_from_earth_count_by_month
 
