@@ -10,10 +10,10 @@ logger = logging.getLogger("database")
 
 if os.getenv('DEBUG'):
     engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/rickmorty", echo=True)
+        "postgresql+psycopg2://postgres:postgres@postgres/rickmorty", echo=True)
 else:
     engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@postgres:5432/rickmorty", echo=False, pool_pre_ping=True)
+        "postgresql+psycopg2://postgres:postgres@postgres/rickmorty", echo=False)
 
 class Database:
 

@@ -1,19 +1,6 @@
 version: '2.0'
 
 services:
-  rickmorty-api:
-    image: ${PROJECT_NAME}-api:${PROJECT_VER}
-    container_name: ${PROJECT_NAME}-pull
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    depends_on:
-      - postgres
-    links:
-     - postgres
-    volumes:
-      - .:/app
-
   postgres:
     image: postgres:16.1
     container_name: ${PROJECT_NAME}-postgres
@@ -23,4 +10,24 @@ services:
       - POSTGRES_DB=rickmorty
     ports:
       - "${PORT}:5432"
+    networks:
+     - ${PROJECT_NAME}-network
 
+  rickmorty-api:
+    image: ${PROJECT_NAME}-api:${PROJECT_VER}
+    container_name: ${PROJECT_NAME}-etl
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - postgres
+    networks:
+     - ${PROJECT_NAME}-network
+    volumes:
+      - .:/app
+    links:
+     - postgres
+
+networks:
+  rickmorty-network:
+    driver: bridge
