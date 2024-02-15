@@ -76,9 +76,7 @@ cli.add_command(docker)
 
 if __name__ == "__main__":
 
-    try:
-        level = bool(int(os.getenv('DEBUG'))) 
-    except: level = logging.WARNING
+    level = logging.WARNING
     
     logging.basicConfig(
         format="%(levelname)s - %(asctime)s: %(message)s LINE: (%(lineno)d) in %(name)s",

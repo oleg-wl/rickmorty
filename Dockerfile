@@ -9,6 +9,6 @@ ENV DEBUG=0
 WORKDIR /app
 COPY . /app
 
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
-CMD ["python", "app.py", "docker"]
+ENTRYPOINT ["./entrypoint.sh"]

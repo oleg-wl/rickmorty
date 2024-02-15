@@ -2,33 +2,30 @@ version: '2.0'
 
 services:
   postgres:
-    env_file:
-     - .env
+
     image: postgres:16.1
-    container_name: ${PROJECT_NAME}-postgres
+    container_name: rickmorty-postgres
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=rickmorty
     ports:
-      - "${PORT}:5432"
+      - "15432:5432"
     networks:
-     - ${PROJECT_NAME}-network
+     - rickmorty-network
 
   rickmorty-api:
-    image: ${PROJECT_NAME}-api
-    container_name: ${PROJECT_NAME}-etl
+    image: rickmorty-api
+    container_name: rickmorty-etl
     build:
       context: .
       dockerfile: ./Dockerfile
     depends_on:
       - postgres
     networks:
-     - ${PROJECT_NAME}-network
+     - rickmorty-network
     volumes:
       - .:/app
-    links:
-     - postgres
 
 networks:
   rickmorty-network:
